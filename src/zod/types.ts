@@ -1,17 +1,25 @@
 export type User = {
-  id: String;
-  email: String;
-  name: String;
+  id: string;
+  email: string;
+  name: string;
+  image: string | null;
 };
 
 export type AuthStatus = "authenticated" | "unauthenticated" | "loading";
 
-export type UseSessionReturn = {
-  data: User | null;
-  status: AuthStatus;
-  error: string | null;
-  refresh: () => Promise<void>;
-};
+export type UseSessionReturn =
+  | {
+      data: User;
+      status: "authenticated";
+      error: null;
+      refresh: () => Promise<void>;
+    }
+  | {
+      data: null;
+      status: "unauthenticated" | "loading";
+      error: string | null;
+      refresh: () => Promise<void>;
+    };
 
 export type CacheEntry = {
   data: User;

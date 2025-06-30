@@ -67,7 +67,9 @@ export const useSession = (): UseSessionReturn => {
       const User = await globalPromise;
       setData(User.user);
       setStatus("authenticated");
+      setError(null);
     } catch (err) {
+      setData(null);
       setError((err as Error).message);
       setStatus("unauthenticated");
     } finally {
@@ -102,7 +104,13 @@ export const useSession = (): UseSessionReturn => {
     }
   }, []);
 
-  return { data, status, error, refresh: refreshSession };
+  // Using type assertion to match our discriminated union
+  return {
+    data,
+    status,
+    error,
+    refresh: refreshSession,
+  } as UseSessionReturn;
 };
 
 export const clearSessionCache = () => {

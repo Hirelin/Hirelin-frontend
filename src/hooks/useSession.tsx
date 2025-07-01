@@ -21,7 +21,7 @@ export const sessionEvents = {
 };
 
 const cache: { [key: string]: CacheEntry } = {};
-let globalPromise: Promise<{ user: User }> | null = null;
+let globalPromise: Promise<{ session: { user: User } }> | null = null;
 
 export const useSession = (): UseSessionReturn => {
   const [data, setData] = useState<User | null>(null);
@@ -29,7 +29,7 @@ export const useSession = (): UseSessionReturn => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUser = async (forceRefresh = false) => {
-    const cachedData = cache["user"];
+    const cachedData = cache["session"];
 
     if (!forceRefresh && cachedData) {
       setData(cachedData.data);
@@ -46,17 +46,17 @@ export const useSession = (): UseSessionReturn => {
         method: "GET",
         credentials: "include",
       })
-        .then((response) => {
+        .then(async (response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch user data");
           }
           return response.json();
         })
-        .then(({ user }: { user: User }) => {
-          cache["user"] = {
-            data: user,
+        .then(({ session }: { session: { user: User } }) => {
+          cache["session"] = {
+            data: session.user,
           };
-          return { user };
+          return { session };
         })
         .catch((err) => {
           throw err;
@@ -65,7 +65,7 @@ export const useSession = (): UseSessionReturn => {
 
     try {
       const User = await globalPromise;
-      setData(User.user);
+      setData(User.session.user);
       setStatus("authenticated");
       setError(null);
     } catch (err) {
@@ -103,10 +103,12 @@ export const useSession = (): UseSessionReturn => {
       };
     }
   }, []);
-
   // Using type assertion to match our discriminated union
+
   return {
-    data,
+    data: {
+      user: data,
+    },
     status,
     error,
     refresh: refreshSession,
@@ -114,7 +116,7 @@ export const useSession = (): UseSessionReturn => {
 };
 
 export const clearSessionCache = () => {
-  delete cache["user"];
+  delete cache["session"];
   globalPromise = null;
   // Emit event to notify all hooks to revalidate
   sessionEvents.emit();

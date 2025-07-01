@@ -3,13 +3,22 @@ export type User = {
   email: string;
   name: string;
   image: string | null;
+  recruiter: null | {
+    id: string;
+    name: string;
+    organization: string;
+    phone: string;
+    address: string;
+  };
 };
 
 export type AuthStatus = "authenticated" | "unauthenticated" | "loading";
 
 export type UseSessionReturn =
   | {
-      data: User;
+      data: {
+        user: User;
+      };
       status: "authenticated";
       error: null;
       refresh: () => Promise<void>;

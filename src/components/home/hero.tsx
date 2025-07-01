@@ -1,7 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import HeroAnimation from "./heroAnimation";
-import { ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import { Button } from "../ui/button";
 
 export default function Hero() {
   return (
@@ -18,6 +19,14 @@ export default function Hero() {
           <div>
             It's <br /> more than just <br />{" "}
             <span className="md:text-6xl text-4xl">Recruiting</span>
+          </div>
+          <div className="mt-2">
+            <Link href={"/jobs"}>
+              <Button className="bg-brand rounded-full font-semibold">
+                Get your dream job
+                <ArrowRight />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

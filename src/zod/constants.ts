@@ -12,3 +12,12 @@ export const Contact = {
     country: "India",
   },
 };
+
+const adminEmail = "admin@hirelin.com";
+const emailSubject = "Recruiter Account Request";
+const emailBody =
+  "Hello,\n\nI would like to request a recruiter account on HireLin.\n\nMy details:\nName:\nCompany:\nPosition:\nPhone:\n\nThank you,\n";
+
+export const mailtoLink = `mailto:${adminEmail}?subject=${encodeURIComponent(
+  emailSubject
+)}&body=${encodeURIComponent(emailBody)}`;

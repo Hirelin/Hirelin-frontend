@@ -16,7 +16,7 @@ export async function getServerSession(): Promise<ServerSessionReturn> {
   if (res.status === 200) {
     const data = await res.json();
     return {
-      data: data.user as User,
+      data: data.session.user as User,
       status: "authenticated",
       error: null,
     };

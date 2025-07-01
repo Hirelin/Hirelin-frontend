@@ -51,7 +51,7 @@ export default function Start() {
               Post open positions and connect with qualified candidates. Our
               AI-powered platform helps you find the perfect match.
             </p>
-            <Link href="/recruiter/create" passHref>
+            <Link href="/recruiter" passHref>
               <Button className="w-full group-hover:bg-primary/90 transition-colors">
                 Post a Job
                 <ArrowRight className="ml-2 h-4 w-4" />

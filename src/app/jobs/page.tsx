@@ -46,7 +46,7 @@ export default async function JobsPage({
     page,
   };
 
-  // Fetch jobs server-side
+  // Fetch jobs server-side with await - this will use the API in production
   const jobsData = await getJobs(filters);
 
   return (

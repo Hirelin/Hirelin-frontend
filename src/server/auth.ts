@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { env } from "~/env";
-import type { ServerSessionReturn, User } from "~/zod/types";
+import type { ServerSessionReturn, User } from "~/types/types";
 
 export async function getServerSession(): Promise<ServerSessionReturn> {
   const cookieStore = await cookies();

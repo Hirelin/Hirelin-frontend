@@ -3,4 +3,9 @@ interface Route {
   link: string;
 }
 
-export const routes: Route[] = [];
+export const routes: Route[] = [
+  {
+    name: "Jobs",
+    link: "/jobs",
+  },
+];

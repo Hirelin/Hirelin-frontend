@@ -6,7 +6,7 @@ import type {
   AuthStatus,
   UseSessionReturn,
   CacheEntry,
-} from "~/zod/types";
+} from "~/types/types";
 
 // Create a custom event for session changes
 const SESSION_CHANGE_EVENT = "session-change";

@@ -1,17 +1,31 @@
 import React from "react";
-import AuthButton from "../buttons/authButton";
 import { routes } from "./routes";
 import Link from "next/link";
 
+import AuthButton from "../buttons/authButton";
+
 export default function Navbar() {
   return (
-    <nav className="w-full h-20">
+    <nav className="w-full h-20 backdrop-blur-lg fixed top-0 z-50">
       <div className="px-8 h-full mx-auto flex flex-row justify-between items-center">
-        <div className="font-bitcount text-4xl font-medium">Hirelin</div>
-        <div className="flex flex-row justify-center items-center gap-4">
-          <div>
-            {routes.map((route) => {
-              return <Link href={route.link}>{route.name}</Link>;
+        <Link
+          href={"/"}
+          className="font-bitcount text-4xl font-normal  bg-gradient-to-br from-orange-500 to-fuchsia-500 bg-clip-text text-transparent"
+        >
+          Hirelin
+        </Link>
+        <div className="flex flex-row justify-center items-center gap-8">
+          <div className="flex flex-row justify-center gap-6 items-center">
+            {routes.map((route, idx) => {
+              return (
+                <Link
+                  key={idx}
+                  href={route.link}
+                  className="text-lg font-semibold"
+                >
+                  {route.name}
+                </Link>
+              );
             })}
           </div>
           <AuthButton />

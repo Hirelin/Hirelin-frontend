@@ -9,6 +9,7 @@ export type User = {
     organization: string;
     phone: string;
     address: string;
+    position: string;
   };
 };
 
@@ -42,6 +43,6 @@ export type ServerSessionReturn =
     }
   | {
       data: null;
-      status: "unauthenticated" | "loading";
+      status: "unauthenticated";
       error: string | null;
     };

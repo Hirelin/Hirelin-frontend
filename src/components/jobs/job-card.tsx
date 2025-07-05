@@ -18,7 +18,7 @@ export function JobCard({
   company,
   location,
   type,
-  salary,
+  // salary,
   postedDate,
 }: JobCardData) {
   // Format the date for display
@@ -44,11 +44,11 @@ export function JobCard({
           <span>{location}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <BriefcaseIcon className="h-4 w-4" />
           <span>{JOB_TYPE_LABELS[type] || type}</span>
           {salary && <span>• {salary}</span>}
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarIcon className="h-4 w-4" />

@@ -6,7 +6,10 @@ import { Button } from "../ui/button";
 
 export default function Hero() {
   return (
-    <section className="flex flex-col justify-around w-full h-screen" id="hero">
+    <section
+      className="flex flex-col justify-around w-full h-screen px-8"
+      id="hero"
+    >
       <div className="w-full flex justify-center items-center py-20 mt-20 gap-10">
         <div className="lg:flex justify-center items-center w-full hidden">
           <HeroAnimation className="aspect-square h-[50vh]" />

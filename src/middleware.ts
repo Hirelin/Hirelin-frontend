@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
         session.data.recruiter === null &&
         request.nextUrl.pathname !== "/recruiter/register"
       ) {
-        console.log(env.SERVER_URL + "/recruiter/register");
+        // console.log(env.SERVER_URL + "/recruiter/register");
         return NextResponse.redirect(env.SERVER_URL + "/recruiter/register");
       } else if (
         session.status === "authenticated" &&

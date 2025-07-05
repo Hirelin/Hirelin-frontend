@@ -1,4 +1,4 @@
-export const SESSION_TOKEN_NAME = "session_token";
+export const SESSION_TOKEN_NAME = "session_id";
 export const Contact = {
   email: "hirelin@gmail.com",
   phone: "+91 1234567890",

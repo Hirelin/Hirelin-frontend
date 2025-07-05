@@ -4,6 +4,7 @@ import ThemeProvider from "../provider/theme-provider";
 import Navbar from "../navbar/navbar";
 import ReactScan from "../provider/react-scan";
 import Footer from "../footer/footer";
+import { Toaster } from "../ui/sonner";
 
 export default function PublicLayout({
   children,
@@ -21,6 +22,7 @@ export default function PublicLayout({
       <Navbar />
       <main className="min-h-screen w-full">{children}</main>
       <Footer />
+      <Toaster />
     </ThemeProvider>
   );
 }

@@ -3,7 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { useSession } from "~/hooks/useSession";
 import { logOut, SignInWithProvider } from "~/lib/auth";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "../ui/button";
 import {
@@ -16,6 +16,7 @@ import { Separator } from "~/components/ui/separator";
 export default function AuthButton() {
   const session = useSession();
   const params = useSearchParams();
+  const router = useRouter();
 
   if (session.status === "loading") {
     <Button disabled></Button>;
@@ -47,7 +48,25 @@ export default function AuthButton() {
             </p>
             <p className="opacity-70">{session.data.user.email}</p>
             <div className="grid grid-rows-2 grid-cols-1 mt-4 gap-2 w-full">
-              <Button className="w-full">Profile</Button>
+              {session.data.user.recruiter !== null && (
+                <Button
+                  className="w-full"
+                  variant={"outline"}
+                  onClick={() => {
+                    router.push("/recruiter");
+                  }}
+                >
+                  Recruiter Dashboard
+                </Button>
+              )}
+              <Button
+                className="w-full"
+                onClick={() => {
+                  router.push("/profile");
+                }}
+              >
+                Profile
+              </Button>
               <Button
                 className="w-full"
                 variant={"destructive"}

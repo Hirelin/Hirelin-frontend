@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Search, MapPin, Filter, X } from "lucide-react";
 import {
   JobFiltersType,
@@ -19,6 +19,15 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 
+// Debounce helper function
+const debounce = <T extends (...args: any[]) => void>(fn: T, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
+
 interface JobFiltersProps {
   filters: JobFiltersType;
   setFilters: React.Dispatch<React.SetStateAction<JobFiltersType>>;
@@ -35,7 +44,25 @@ export function JobFilters({
   applyFilters,
   resetFilters,
 }: JobFiltersProps) {
-  const [isFiltersVisible, setIsFiltersVisible] = React.useState(false);
+  const [isFiltersVisible, setIsFiltersVisible] = useState(false);
+
+  // Local state for input fields to prevent re-renders
+  const [localSearch, setLocalSearch] = useState(filters.search || "");
+  const [localLocation, setLocalLocation] = useState(filters.location || "");
+
+  // Sync local state with props when filters change from outside
+  useEffect(() => {
+    setLocalSearch(filters.search || "");
+    setLocalLocation(filters.location || "");
+  }, [filters.search, filters.location]);
+
+  // Debounced filter update functions
+  const debouncedSetFilters = useCallback(
+    debounce((newFilters: Partial<JobFiltersType>) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+    }, 300),
+    [setFilters]
+  );
 
   // Immediately apply filter when clicking on badge X button
   const handleRemoveJobType = (type: string) => {
@@ -63,12 +90,19 @@ export function JobFilters({
     setTimeout(applyFilters, 0);
   };
 
+  // Handle input changes with local state
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, search: e.target.value }));
+    const value = e.target.value;
+    setLocalSearch(value);
+    // Debounce the update to parent state
+    debouncedSetFilters({ search: value });
   };
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, location: e.target.value }));
+    const value = e.target.value;
+    setLocalLocation(value);
+    // Debounce the update to parent state
+    debouncedSetFilters({ location: value });
   };
 
   const handleJobTypeChange = (type: string) => {
@@ -112,6 +146,12 @@ export function JobFilters({
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      // Use the current local values directly
+      setFilters((prev) => ({
+        ...prev,
+        search: localSearch,
+        location: localLocation,
+      }));
       applyFilters();
     }
   };
@@ -125,7 +165,7 @@ export function JobFilters({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Job title or keyword"
-              value={filters.search || ""}
+              value={localSearch}
               onChange={handleSearchChange}
               onKeyDown={handleKeyPress}
               className="pl-10"
@@ -135,13 +175,25 @@ export function JobFilters({
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Location"
-              value={filters.location || ""}
+              value={localLocation}
               onChange={handleLocationChange}
               onKeyDown={handleKeyPress}
               className="pl-10"
             />
           </div>
-          <Button onClick={applyFilters}>Search</Button>
+          <Button
+            onClick={() => {
+              // Make sure the latest values are used
+              setFilters((prev) => ({
+                ...prev,
+                search: localSearch,
+                location: localLocation,
+              }));
+              applyFilters();
+            }}
+          >
+            Search
+          </Button>
         </div>
 
         {/* Active filters display */}
@@ -241,7 +293,7 @@ export function JobFilters({
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="experience">
+              {/* <AccordionItem value="experience">
                 <AccordionTrigger className="text-sm font-medium">
                   Experience Level
                 </AccordionTrigger>
@@ -292,8 +344,8 @@ export function JobFilters({
                   </div>
                 </AccordionContent>
               </AccordionItem>
+            */}
             </Accordion>
-
             <div className="mt-4 flex justify-end">
               <Button onClick={applyFilters} className="ml-auto">
                 Apply Filters

@@ -35,7 +35,7 @@ export interface JobCardData {
   company: string;
   location: string;
   type: string;
-  salary?: string; // Salary remains as string
+  // salary?: string; // Salary remains as string
   postedDate: string;
   skills: string[];
   matchScore?: number;

@@ -29,17 +29,29 @@ export function JobExplorer({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Use state from server but allow client-side updates
-  const [jobs] = useState<JobCardData[]>(initialJobs);
+  // Track client-side state for jobs to ensure we use updated data
+  const [jobs, setJobs] = useState<JobCardData[]>(initialJobs);
   const [filters, setFilters] = useState<JobFiltersType>(initialFilters);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentTotalJobs, setCurrentTotalJobs] = useState(totalJobs);
+  const [currentTotalPages, setCurrentTotalPages] = useState(totalPages);
 
-  // Ensure we keep our filter state in sync with URL parameters
+  // Update local state when props change from server
+  useEffect(() => {
+    setJobs(initialJobs);
+    setCurrentPage(initialPage);
+    setCurrentTotalJobs(totalJobs);
+    setCurrentTotalPages(totalPages);
+  }, [initialJobs, initialPage, totalJobs, totalPages]);
+
+  // Keep filter state in sync with URL parameters
   useEffect(() => {
     setFilters(initialFilters);
   }, [initialFilters]);
 
   // Apply filters by updating the URL
   const applyFilters = () => {
+    setJobs([]); // Clear jobs while loading
     startTransition(() => {
       // Create new search params
       const params = new URLSearchParams();
@@ -61,13 +73,17 @@ export function JobExplorer({
         params.set("skills", filters.skills.join(","));
       }
 
-      // Navigate to the new URL which will trigger a server-side fetch
+      // Reset to page 1 when applying new filters
+      params.set("page", "1");
+
+      // Force a fresh navigation without shallow routing
       router.push(`/jobs?${params.toString()}`);
     });
   };
 
   // Reset filters
   const resetFilters = () => {
+    setJobs([]); // Clear jobs while loading
     setFilters({
       search: "",
       location: "",
@@ -84,12 +100,13 @@ export function JobExplorer({
 
   // Handle page changes
   const handlePageChange = (page: number) => {
+    setJobs([]); // Clear jobs while loading
     startTransition(() => {
       // Create new search params based on current ones
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", page.toString());
 
-      // Navigate to the new page
+      // Navigate to the new page with a fresh request
       router.push(`/jobs?${params.toString()}`);
 
       // Scroll to top of job list for better UX
@@ -111,10 +128,10 @@ export function JobExplorer({
       {/* Fixed height container to prevent layout shifts */}
       <div id="job-list-container" className="min-h-[500px]">
         {!isPending && (
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-muted-foreground">
               Showing <span className="font-medium">{jobs.length}</span> of{" "}
-              <span className="font-medium">{totalJobs}</span> results
+              <span className="font-medium">{currentTotalJobs}</span> results
             </p>
           </div>
         )}
@@ -128,10 +145,10 @@ export function JobExplorer({
           isPending ? "opacity-50 pointer-events-none" : "opacity-100"
         }`}
       >
-        {totalPages > 1 && (
+        {currentTotalPages > 1 && (
           <JobPagination
-            currentPage={initialPage}
-            totalPages={totalPages}
+            currentPage={currentPage}
+            totalPages={currentTotalPages}
             onPageChange={handlePageChange}
           />
         )}

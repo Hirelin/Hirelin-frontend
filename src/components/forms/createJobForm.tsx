@@ -25,9 +25,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { Card, CardContent, CardFooter } from "~/components/ui/card";
 import { env } from "~/env";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 export default function CreateJobForm() {
   const [loading, setLoading] = useState(false);
@@ -62,11 +70,14 @@ export default function CreateJobForm() {
 
     console.log(formData);
 
-    const res = await fetch(`${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/create`, {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
+    const res = await fetch(
+      `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/recruiter/create`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
 
     if (res.status === 200) {
       form.reset();
@@ -268,32 +279,78 @@ export default function CreateJobForm() {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="requiremetsFile"
-              render={({ field: { value, onChange, ...fieldProps } }) => (
-                <FormItem>
-                  <FormLabel>Requirements Document</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        onChange(file);
-                      }}
-                      {...fieldProps}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Upload a PDF or Word document with detailed requirements.
-                    Job description will be used to filter candidates if no
-                    format file is uploaded
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field: { value, onChange, ...fieldProps } }) => (
+                  <FormItem className="flex justify-start flex-col">
+                    <FormLabel>Application Deadline</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !value && "text-muted-foreground"
+                            )}
+                          >
+                            {value ? (
+                              format(value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={value}
+                          onSelect={onChange}
+                          disabled={(date) =>
+                            date < new Date() || date < new Date("1900-01-01")
+                          }
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Set the deadline for applications
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="requiremetsFile"
+                render={({ field: { value, onChange, ...fieldProps } }) => (
+                  <FormItem>
+                    <FormLabel>Requirements Document</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          onChange(file);
+                        }}
+                        {...fieldProps}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Upload a PDF or Word document with detailed requirements.
+                      Job description will be used to filter candidates if no
+                      format file is uploaded
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <CardFooter className="px-0 pt-6">
               <Button type="submit" className="ml-auto" disabled={loading}>

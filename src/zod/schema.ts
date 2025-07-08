@@ -19,5 +19,6 @@ export const createJobSchema = z.object({
   description: z.string().min(1, "Job description is required"),
   contact: z.string().email("Invalid email address"),
   address: z.string(),
+  deadline: z.date(),
   requiremetsFile: z.instanceof(File).optional(),
 });

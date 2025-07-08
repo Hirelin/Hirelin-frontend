@@ -14,7 +14,7 @@ export default function PublicLayout({
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
+      defaultTheme="dark"
       enableSystem
       disableTransitionOnChange
     >
@@ -22,7 +22,7 @@ export default function PublicLayout({
       <Navbar />
       <main className="min-h-screen w-full">{children}</main>
       <Footer />
-      <Toaster />
+      <Toaster richColors />
     </ThemeProvider>
   );
 }

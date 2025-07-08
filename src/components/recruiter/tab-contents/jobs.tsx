@@ -16,6 +16,7 @@ interface Job {
   status?: string;
   applicantsCount?: number;
   requirements?: JSON | null; // Optional field for job requirements
+  deadline?: string; // Add deadline field
 }
 
 export default function RecruiterJobs() {
@@ -38,6 +39,7 @@ export default function RecruiterJobs() {
         status: job.status || "active", // Default to active
         applicantsCount: job.applicantsCount || 0,
         location: job.location || "Remote",
+        deadline: job.deadline, // Include deadline from API
         requirements: job.requirements ? JSON.parse(job.requirements) : null, // Parse requirements if it's a JSON string
       }));
 

@@ -54,7 +54,7 @@ export default async function JobDetails({
   const jobData = (await jobDetails.json()).data as JobData;
 
   return (
-    <section className="min-h-screen w-full flex justify-center py-20 px-4">
+    <section className="min-h-screen w-full flex justify-center py-32 px-4">
       <div className="container max-w-4xl">
         <div className="space-y-6">
           {/* Header Section */}

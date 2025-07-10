@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useRouter } from "next/navigation";
 
 interface Job {
   id: string;
@@ -59,6 +60,7 @@ export function JobCard({ job }: JobCardProps) {
   const [isRequirementsOpen, setIsRequirementsOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(currentStatus);
   const [isUpdating, setIsUpdating] = useState(false);
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -329,6 +331,14 @@ export function JobCard({ job }: JobCardProps) {
                   </span>
                 </Button>
               </ApplicationsDialog>
+
+              <Button
+                onClick={() => {
+                  router.push("/recruiter/" + job.id);
+                }}
+              >
+                View Details
+              </Button>
 
               {job.requirements && (
                 <Dialog

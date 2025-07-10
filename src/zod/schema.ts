@@ -20,5 +20,6 @@ export const createJobSchema = z.object({
   contact: z.string().email("Invalid email address"),
   address: z.string(),
   deadline: z.date(),
-  requiremetsFile: z.instanceof(File).optional(),
+  requirementsFile: z.instanceof(File).optional(),
+  layoutReferenceFile: z.instanceof(File),
 });

@@ -5,24 +5,30 @@ import ApplicationsList from "~/components/profile/ApplicationsList";
 import ResumeSection from "~/components/profile/ResumeSection";
 import LearningPlansList from "~/components/profile/LearningPlansList";
 import { User } from "lucide-react";
+import { getServerSession } from "~/server/auth";
+import AuthButton from "~/components/buttons/authButton";
 
 export default async function ProfilePage() {
-  const userProfile = await getUserProfile();
+  const session = await getServerSession();
 
-  if (userProfile.status === "unauthenticated") {
+  if (session.status === "unauthenticated") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-destructive mb-2 flex items-center justify-center gap-2">
+            <User className="h-7 w-7" />
             Access Denied
           </h1>
-          <p className="text-muted-foreground">
-            Please log in to view your profile.
+          <p className="text-muted-foreground mb-4">
+            You must be logged in to view your profile.
           </p>
+          <AuthButton />
         </div>
       </div>
     );
   }
+
+  const userProfile = await getUserProfile();
 
   if (userProfile.status === "error" || !userProfile.data) {
     return (
@@ -69,7 +75,7 @@ export default async function ProfilePage() {
         <ApplicationsList applications={data.applications} />
 
         {/* Learning Plans Section */}
-        <LearningPlansList applications={data.applications} />
+        {/* <LearningPlansList applications={data.applications} /> */}
       </div>
     </main>
   );

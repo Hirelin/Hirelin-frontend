@@ -336,3 +336,44 @@ export const getApplicationStatusLabel = (
       return "Unknown";
   }
 };
+
+export async function shortlistApplicantions(
+  count: number,
+  jobId: string
+): Promise<{
+  message: string;
+  status: boolean;
+}> {
+  try {
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/recruiter/shortlist-candidates`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          shortlistCount: count,
+          jobId: jobId,
+        }),
+        credentials: "include",
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return {
+        message: data.message,
+        status: true,
+      };
+    }
+
+    return {
+      message: data.message,
+      status: false,
+    };
+  } catch (error) {
+    return {
+      message: "Failed to shortlist candidates",
+      status: false,
+    };
+  }
+}

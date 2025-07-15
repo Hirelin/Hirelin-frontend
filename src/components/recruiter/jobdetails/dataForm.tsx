@@ -57,7 +57,12 @@ import {
   shortlistApplicantions,
 } from "~/lib/recruiter";
 import { cn } from "~/lib/utils";
-import { Application, JobOpening } from "~/server/recruiter";
+import {
+  Application,
+  JobApplications,
+  JobOpening,
+  Training,
+} from "~/server/recruiter";
 import { JobType } from "~/types/jobs";
 import { Calendar as CalendarComp } from "~/components/ui/calendar";
 import { toast } from "sonner";
@@ -77,6 +82,7 @@ type JobEditFormData = {
   status: JobStatus;
   startDate: Date | null;
   endDate: Date | null;
+  training: Training | null;
 };
 
 export default function DataForm({
@@ -100,6 +106,7 @@ export default function DataForm({
     status: job.status as JobStatus,
     startDate: job.startDate ? new Date(job.startDate) : null,
     endDate: job.endDate ? new Date(job.endDate) : null,
+    training: job.training || null,
   });
   const [saving, setSaving] = useState(false);
   const { jobId } = useParams();
@@ -154,7 +161,13 @@ export default function DataForm({
           <Details form={form} setForm={setForm} editing={editing} />
         </TabsContent>
         <TabsContent value="dates" className="space-y-6">
-          <Dates form={form} setForm={setForm} editing={editing} />
+          <Dates
+            form={form}
+            setForm={setForm}
+            editing={editing}
+            setEditing={setEditing}
+            jobId={job.id}
+          />
         </TabsContent>
         <TabsContent value="files" className="space-y-6">
           <Files job={job} />
@@ -366,14 +379,65 @@ function Dates({
   form,
   setForm,
   editing,
+  setEditing,
+  jobId,
 }: {
   form: JobEditFormData;
   setForm: React.Dispatch<React.SetStateAction<JobEditFormData>>;
   editing: boolean;
+  setEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  jobId: string;
 }) {
+  const [submitting, setSubmitting] = useState(false);
+
   function handleDateChange(key: string, value: Date) {
     setForm((f) => ({ ...f, [key]: value }));
   }
+
+  function handleTrainingChange(key: string, value: string | Date | null) {
+    setTraining((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleTrainingSubmit() {
+    setSubmitting(true);
+    try {
+      const response = await fetch(
+        `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/recruiter/create-update-training`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            jobId: jobId,
+            trainingId: form.training?.id || null,
+            startDate: training.startDate,
+            endDate: training.endDate,
+            topics: training.topics,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Training details saved successfully");
+        setEditing(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message);
+      }
+    } catch (error) {
+      toast.error("Failed to save training details");
+    }
+    setSubmitting(false);
+  }
+
+  const [training, setTraining] = useState({
+    startDate: form.training?.startDate || null,
+    endDate: form.training?.endDate || null,
+    topics: form.training?.topics || "",
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -396,8 +460,8 @@ function Dates({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {form.startDate ? (
-                    format(form.startDate, "PPP")
+                  {training.startDate ? (
+                    format(training.startDate, "PPP")
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -409,7 +473,7 @@ function Dates({
                   selected={form.startDate ?? undefined}
                   onSelect={(value) => {
                     if (value) {
-                      handleDateChange("startDate", value);
+                      handleTrainingChange("startDate", value);
                     }
                   }}
                   disabled={(date) =>
@@ -431,8 +495,8 @@ function Dates({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {form.endDate ? (
-                    format(form.endDate, "PPP")
+                  {training.endDate ? (
+                    format(training.endDate, "PPP")
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -444,7 +508,7 @@ function Dates({
                   selected={form.endDate ?? undefined}
                   onSelect={(value) => {
                     if (value) {
-                      handleDateChange("endDate", value);
+                      handleTrainingChange("endDate", value);
                     }
                   }}
                   disabled={(date) =>
@@ -490,6 +554,53 @@ function Dates({
             </Popover>
           </div>
         </div>
+        <div className="w-full flex flex-col gap-2">
+          <Label>Training Topics</Label>
+          <Textarea
+            value={training.topics}
+            disabled={!editing}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+
+              if (target) {
+                setTraining((f) => ({ ...f, topics: target.value }));
+              }
+            }}
+          />
+        </div>
+        {editing && (
+          <>
+            <div className="flex justify-start flex-row gap-4">
+              <Button
+                variant={"destructive"}
+                disabled={submitting}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  setTraining({
+                    startDate: form.training?.startDate || null,
+                    endDate: form.training?.endDate || null,
+                    topics: form.training?.topics || "",
+                  });
+
+                  setEditing(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant={"outline"}
+                disabled={submitting}
+                onClick={async () => {
+                  await handleTrainingSubmit();
+                }}
+              >
+                Save Training
+              </Button>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -735,13 +846,14 @@ function ParsedRequirementsDialog({ requirements }: { requirements: string }) {
   );
 }
 
-interface ApplicationWithScore extends Application {
+interface ApplicationWithScore extends JobApplications {
   overallScore: number;
 }
 
 function ApplicationList({ job }: { job: JobOpening }) {
   const [shortlistCount, setShortlistCount] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const processedApplications = useMemo(() => {
     const withScores: ApplicationWithScore[] =
@@ -784,6 +896,53 @@ function ApplicationList({ job }: { job: JobOpening }) {
     return "bg-red-100 dark:bg-red-900/20";
   }, []);
 
+  async function handleStartTraining() {
+    setSubmitting(true);
+    try {
+      const response = await fetch(
+        `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/recruiter/start-training?jobId=${job.id}`,
+        { method: "POST", credentials: "include" }
+      );
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        toast.error(json.message);
+      } else {
+        toast.success(json.message);
+      }
+    } catch (error) {
+      toast.error("Failed to start candidates training");
+    }
+    setSubmitting(false);
+  }
+
+  const getAssessmentStats = useCallback(function (
+    application: ApplicationWithScore
+  ) {
+    if (
+      !application.learningPlan ||
+      application.learningPlan.length === 0 ||
+      !application.learningPlan[0].assessments
+    ) {
+      return { averageScore: 0, completed: 0, total: 0, sortedAssessments: [] };
+    }
+
+    const sortedAssessments = [...application.learningPlan[0].assessments].sort(
+      (a, b) => Number(a.title) - Number(b.title)
+    );
+
+    const completed = sortedAssessments.filter((a) => a.score !== 0).length;
+    const total = sortedAssessments.length;
+    const averageScore =
+      total === 0
+        ? 0
+        : sortedAssessments.reduce((sum, a) => sum + (a.score || 0), 0) / total;
+
+    return { averageScore, completed, total, sortedAssessments };
+  },
+  []);
+
   return (
     <>
       {processedApplications.length === 0 ? (
@@ -819,6 +978,18 @@ function ApplicationList({ job }: { job: JobOpening }) {
                   }}
                 >
                   Refresh
+                </Button>
+                <Button
+                  variant={"secondary"}
+                  disabled={submitting}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    await handleStartTraining();
+                  }}
+                >
+                  Start training
                 </Button>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
@@ -929,6 +1100,87 @@ function ApplicationList({ job }: { job: JobOpening }) {
                               }
                             )}
                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 min-w-[160px] h-full justify-center items-center">
+                    <div className="bg-muted/50 border rounded-lg p-2 w-full h-full">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Assessments
+                        </span>
+                        <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">
+                            Completed
+                          </span>
+                          <span className="font-semibold">
+                            {getAssessmentStats(application).completed} /{" "}
+                            {getAssessmentStats(application).total}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-500"
+                            style={{
+                              width: `${
+                                getAssessmentStats(application).total === 0
+                                  ? 0
+                                  : (getAssessmentStats(application).completed /
+                                      getAssessmentStats(application).total) *
+                                    100
+                              }%`,
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs mt-2">
+                          <span className="text-muted-foreground">
+                            Avg. Score
+                          </span>
+                          <span
+                            className={`font-semibold ${
+                              getAssessmentStats(application).averageScore >= 8
+                                ? "text-green-600 dark:text-green-400"
+                                : getAssessmentStats(application)
+                                    .averageScore >= 6
+                                ? "text-yellow-600 dark:text-yellow-400"
+                                : getAssessmentStats(application)
+                                    .averageScore >= 4
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-red-600 dark:text-red-400"
+                            }`}
+                          >
+                            {getAssessmentStats(
+                              application
+                            ).averageScore.toFixed(1)}{" "}
+                            / 10
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              getAssessmentStats(application).averageScore >= 8
+                                ? "bg-green-500"
+                                : getAssessmentStats(application)
+                                    .averageScore >= 6
+                                ? "bg-yellow-500"
+                                : getAssessmentStats(application)
+                                    .averageScore >= 4
+                                ? "bg-orange-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{
+                              width: `${
+                                (getAssessmentStats(application).averageScore /
+                                  10) *
+                                100
+                              }%`,
+                            }}
+                          />
                         </div>
                       </div>
                     </div>

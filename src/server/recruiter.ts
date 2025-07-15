@@ -44,6 +44,35 @@ type UploadFile = {
   filetype?: string;
 };
 
+export type Training = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  topics: string;
+};
+
+interface LearningPlan {
+  id: string;
+  completedPlans: number;
+  planDetails: Record<string, any>;
+  assessments: Array<{
+    id: string;
+    title: string;
+    score: number;
+  }>;
+  applicationId: string;
+  trainingId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    assessment: number;
+  };
+}
+
+export interface JobApplications extends Application {
+  learningPlan: Array<LearningPlan>;
+}
+
 export type JobOpening = {
   id: string;
   title: string;
@@ -67,7 +96,8 @@ export type JobOpening = {
   recruiter?: Recruiter;
   createdAt: string;
   updatedAt: string;
-  applications?: Application[];
+  applications?: JobApplications[];
+  training: Training | null;
 };
 
 export async function getJobDetailsById(

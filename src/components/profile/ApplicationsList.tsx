@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -18,31 +17,32 @@ import {
   Calendar,
   TrendingUp,
 } from "lucide-react";
-
-interface Application {
-  id: string;
-  status: "pending" | "rejected" | "accepted" | "training" | "hired";
-  layoutScore: number;
-  contentScore: number;
-  jobOpening: {
-    id: string;
-    title: string;
-    company: string;
-  };
-  learningPlan: {
-    id: string;
-    planDetails: string;
-    createdAt: Date;
-    _count: {
-      assesments: number;
-    };
-    assessments: {
-      id: string;
-      title: string;
-      description: string;
-    };
-  } | null;
-}
+import type { Applications as Application } from "~/lib/user";
+import Link from "next/link";
+// interface Application {
+//   id: string;
+//   status: "pending" | "rejected" | "accepted" | "training" | "hired";
+//   layoutScore: number;
+//   contentScore: number;
+//   jobOpening: {
+//     id: string;
+//     title: string;
+//     company: string;
+//   };
+//   learningPlan: {
+//     id: string;
+//     planDetails: string;
+//     createdAt: Date;
+//     _count: {
+//       assesments: number;
+//     };
+//     assessments: {
+//       id: string;
+//       title: string;
+//       description: string;
+//     }[];
+//   }[];
+// }
 
 interface ApplicationsListProps {
   applications: Application[];
@@ -93,15 +93,17 @@ export default function ApplicationsList({
               Job Applications ({applications.length})
             </CardTitle>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => alert("Browse jobs functionality coming soon!")}
-            className="gap-2"
-          >
-            <ExternalLink className="h-4 w-4" />
-            Browse Jobs
-          </Button>
+          <Link href={"/jobs"}>
+            <Button
+              variant="outline"
+              size="sm"
+              // onClick={() => alert("Browse jobs functionality coming soon!")}
+              className="gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Browse Jobs
+            </Button>
+          </Link>
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -111,7 +113,7 @@ export default function ApplicationsList({
             <p>No applications yet.</p>
             <Button
               className="mt-4"
-              onClick={() => alert("Browse jobs functionality coming soon!")}
+              // onClick={() => alert("Browse jobs functionality coming soon!")}
             >
               Start Applying
             </Button>
@@ -182,15 +184,20 @@ export default function ApplicationsList({
                     </TableCell>
                     <TableCell className="text-center">
                       {app.learningPlan ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewLearningPlan(app.id)}
-                          className="gap-1"
-                        >
-                          <BookOpen className="h-3 w-3" />
-                          View Plan
-                        </Button>
+                        <Link href={`/profile/${app.id}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            // onClick={() => {
+                            //    handleViewLearningPlan(app.id)
+
+                            // }}
+                            className="gap-1"
+                          >
+                            <BookOpen className="h-3 w-3" />
+                            View Plan
+                          </Button>
+                        </Link>
                       ) : (
                         <Badge variant="secondary" className="text-xs">
                           Not Available

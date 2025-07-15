@@ -21,9 +21,22 @@ enum ApplicationStatus {
   hired = "hired",
 }
 
+interface PlanDetails {
+  day: number;
+  title: string;
+  topics: string[];
+  resources: {
+    type: string;
+    title: string;
+    estimated_time: string;
+  }[];
+  learning_objectives: string[];
+}
+
 interface LearningPlan {
   id: string;
-  planDetails: string;
+  planDetails: PlanDetails[] | null;
+  completed_plans: number;
   createdAt: Date;
   _count: {
     assesments: number;
@@ -32,10 +45,11 @@ interface LearningPlan {
     id: string;
     title: string;
     description: string;
-  };
+    score: number;
+  }[];
 }
 
-interface Applications {
+export interface Applications {
   id: string;
   status: ApplicationStatus;
   layoutScore: number;
@@ -45,7 +59,7 @@ interface Applications {
     title: string;
     company: string;
   };
-  learningPlan: LearningPlan | null;
+  learningPlan: LearningPlan[];
 }
 
 interface UserProfile {
@@ -107,6 +121,124 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     };
   } catch (error) {
     console.error("Error fetching user profile:", error);
+    return {
+      status: "error",
+      data: null,
+    };
+  }
+}
+
+export async function getApplicationPlans(applicationId: string): Promise<{
+  status: "success" | "unauthenticated" | "error";
+  data: Applications | null;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get(SESSION_TOKEN_NAME);
+
+    if (sessionId === undefined || sessionId.value === "") {
+      return {
+        status: "unauthenticated",
+        data: null,
+      };
+    }
+
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/user/get-learning-plans?applicationId=${applicationId}`,
+      {
+        credentials: "include",
+        method: "GET",
+        headers: {
+          Cookie: `session_id=${sessionId.value};`,
+        },
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch Application plans: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data && data.success) {
+      return {
+        status: "success",
+        data: data.data,
+      };
+    }
+
+    return {
+      status: "error",
+      data: null,
+    };
+  } catch (error) {
+    console.error("Error fetching Application Plans:", error);
+    return {
+      status: "error",
+      data: null,
+    };
+  }
+}
+
+interface Questions {
+  question: string;
+  explanation: string;
+  correct_answer: string;
+  options: string[];
+}
+
+export interface Assessment {
+  id: string;
+  title: string; // will be a number
+  description: string;
+  questions: Questions[];
+  score: number;
+  learningPlanId: string;
+  createdAt: string;
+  updatedAt: string;
+  learningPlan: LearningPlan;
+}
+
+export async function getAssessment(assesmentId: string): Promise<{
+  status: "success" | "unauthenticated" | "error";
+  data: Assessment | null;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get(SESSION_TOKEN_NAME);
+
+    if (sessionId === undefined || sessionId.value === "") {
+      return {
+        status: "unauthenticated",
+        data: null,
+      };
+    }
+
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_SERVER_URL}/api/jobs/user/get-assessment?assessmentId=${assesmentId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Cookie: `session_id=${sessionId.value};`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        status: "error",
+        data: null,
+      };
+    }
+
+    return {
+      status: "success",
+      data: data.data,
+    };
+  } catch (error) {
     return {
       status: "error",
       data: null,

@@ -15,8 +15,6 @@ import { Button } from "../ui/button";
 export default function RecruiterProfile() {
   const session = useSession();
 
-  // console.log(session);
-
   if (session.status === "authenticated")
     return (
       <Card className="col-span-1 md:col-span-1">
